@@ -90,8 +90,10 @@ export function MapWrapper({ location, photos }) {
                   <div className="popup-time">
                     {new Date(photo.timestamp).toLocaleTimeString()}
                   </div>
-                  <div>Lat: {photo.lat.toFixed(4)}</div>
-                  <div>Lng: {photo.lng.toFixed(4)}</div>
+                  {photo.batteryLevel !== undefined && (
+                    <div className="popup-battery">🔋 Battery: %{photo.batteryLevel}</div>
+                  )}
+                  <div className="popup-coords">Lat: {photo.lat.toFixed(4)}, Lng: {photo.lng.toFixed(4)}</div>
                 </div>
               </div>
             </Popup>
