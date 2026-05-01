@@ -1,0 +1,339 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import 'leaflet/dist/leaflet.css';
+
+:root {
+  --bg-color: #0f172a;
+  --text-color: #f8fafc;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden; /* Prevent scrolling, full screen app */
+}
+
+/* Map container needs a specific height to render */
+.map-container {
+  height: 100vh;
+  width: 100vw;
+  z-index: 1; /* Map is base layer */
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px var(--shadow-color);
+  border-radius: 16px;
+}
+
+/* Overlays on top of the map */
+.ui-layer {
+  position: absolute;
+  z-index: 1000; /* Leaflet uses z-index up to 400-ish */
+  pointer-events: none; /* Let clicks pass through to map where there are no UI elements */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+/* Make actual UI elements clickable */
+.ui-layer > * {
+  pointer-events: auto;
+}
+
+/* Floating Action Button (FAB) */
+.fab {
+  position: absolute;
+  bottom: 32px;
+  right: 32px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  z-index: 1000;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.6);
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+/* Camera Overlay */
+.camera-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.camera-container {
+  position: relative;
+  width: 90%;
+  max-width: 600px;
+  aspect-ratio: 3/4;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--glass-border);
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.camera-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 32px;
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
+
+.btn-capture {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: white;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  background-clip: padding-box;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.btn-capture:active {
+  transform: scale(0.9);
+}
+
+.btn-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+}
+
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Popup Styles for Leaflet */
+.leaflet-popup-content-wrapper {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px var(--shadow-color) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.leaflet-popup-tip {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+}
+
+.popup-content-layout {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  min-width: 220px;
+}
+
+.popup-thumbnail {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.popup-details {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.popup-time {
+  font-weight: 500;
+  color: white;
+  margin-bottom: 4px;
+}
+
+/* Header/Status bar */
+.status-bar {
+  padding: 12px 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444; /* red for error/searching */
+}
+
+.status-indicator.active {
+  background-color: #22c55e; /* green for active */
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+}
+
+/* --- Custom Map Markers --- */
+
+/* User Location Pulsing Dot */
+.user-location-marker {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-location-marker .dot {
+  width: 14px;
+  height: 14px;
+  background-color: #3b82f6; /* Blue */
+  border: 2px solid white;
+  border-radius: 50%;
+  position: absolute;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.user-location-marker .pulse {
+  width: 24px;
+  height: 24px;
+  background-color: rgba(59, 130, 246, 0.5);
+  border-radius: 50%;
+  position: absolute;
+  z-index: 1;
+  animation: pulse-animation 2s infinite ease-in-out;
+}
+
+@keyframes pulse-animation {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Photo Marker */
+.photo-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.photo-marker-pin {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #ef4444, #b91c1c); /* Red gradient */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  z-index: 2;
+  overflow: hidden;
+}
+
+.photo-marker-pin.has-image {
+  width: 48px;
+  height: 48px;
+  background: white; /* acts as a border */
+  padding: 3px;
+}
+
+.marker-thumbnail {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-marker-pointer {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid white;
+  margin-top: -2px;
+  z-index: 1;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+}
