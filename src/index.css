@@ -54,7 +54,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 24px;
+  padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)) 24px;
 }
 
 /* Make actual UI elements clickable */
@@ -111,6 +111,35 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Toast Notification */
+.toast-notification {
+  position: absolute;
+  top: max(80px, env(safe-area-inset-top, 80px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3000;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: 600;
+  color: white;
+  background: rgba(59, 130, 246, 0.85); /* Accent color */
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+  animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0;
+    transform: translate(-50%, -20px) scale(0.9);
+  }
+  to { 
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
 }
 
 .camera-container {

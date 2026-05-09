@@ -1,5 +1,8 @@
 {
   "appId": "com.deneme.photomap",
   "appName": "PhotoMap",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "cleartext": true
+  }
 }

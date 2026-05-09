@@ -42,9 +42,13 @@ const createPhotoIcon = (dataUrl) => {
 function ChangeView({ center }) {
   const map = useMap();
   useEffect(() => {
-    if (center) {
-      map.setView(center, map.getZoom());
-    }
+    // Timeout to ensure DOM is fully rendered on mobile devices
+    setTimeout(() => {
+      map.invalidateSize();
+      if (center) {
+        map.setView(center, map.getZoom());
+      }
+    }, 100);
   }, [center, map]);
   return null;
 }
