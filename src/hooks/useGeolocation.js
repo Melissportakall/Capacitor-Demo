@@ -1,42 +1,52 @@
 import { useState, useEffect } from 'react';
+import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
 
 export function useGeolocation() {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser');
-      return;
-    }
+    let watcherId;
 
-    const handleSuccess = (position) => {
-      setLocation({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-        accuracy: position.coords.accuracy,
-      });
-      setError(null);
+    const startWatch = async () => {
+      try {
+        if (Capacitor.isNativePlatform()) {
+          const perm = await Geolocation.requestPermissions();
+          if (perm.location === 'denied') {
+            setError('Konum izni reddedildi');
+            return;
+          }
+        }
+
+        watcherId = await Geolocation.watchPosition(
+          { enableHighAccuracy: true },
+          (position, err) => {
+            if (err) {
+              setError(err.message);
+              return;
+            }
+            if (position) {
+              setLocation({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                accuracy: position.coords.accuracy,
+              });
+              setError(null);
+            }
+          }
+        );
+      } catch (e) {
+        setError(e.message);
+      }
     };
 
-    const handleError = (err) => {
-      setError(err.message);
-    };
-
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 5000,
-      maximumAge: 0,
-    };
-
-    const watcherId = navigator.geolocation.watchPosition(
-      handleSuccess,
-      handleError,
-      options
-    );
+    startWatch();
 
     return () => {
-      navigator.geolocation.clearWatch(watcherId);
+      if (watcherId) {
+        Geolocation.clearWatch({ id: watcherId });
+      }
     };
   }, []);
 

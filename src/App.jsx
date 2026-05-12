@@ -1,46 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Smartphone } from 'lucide-react';
+import { Camera as CameraIcon, Smartphone } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { Device } from '@capacitor/device';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { MapWrapper } from './components/MapWrapper';
-import { CameraOverlay } from './components/CameraOverlay';
 import { useGeolocation } from './hooks/useGeolocation';
+
+const NOTIFICATION_CHANNEL_ID = 'capacitor-demo';
 
 function App() {
   const { location, error: locationError } = useGeolocation();
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [deviceInfo, setDeviceInfo] = useState(null);
   const [notification, setNotification] = useState(null);
-  
+
   const isInitialLoad = React.useRef(true);
   const prevPhotoCount = React.useRef(0);
-  
-  const API_URL = "http://192.168.1.133:3000/api/photos";
 
-  // Fetch photos from the server periodically
+  const API_URL = "http://192.168.1.5:3000/api/photos";
+
   useEffect(() => {
+    const setupNotifications = async () => {
+      try {
+        const perm = await LocalNotifications.requestPermissions();
+        if (perm.display !== 'granted') {
+          console.warn('Bildirim izni verilmedi:', perm.display);
+          return;
+        }
+        if (Capacitor.getPlatform() === 'android') {
+          await LocalNotifications.createChannel({
+            id: NOTIFICATION_CHANNEL_ID,
+            name: 'Capacitor Demo',
+            description: 'Foto bildirimleri',
+            importance: 5,
+            visibility: 1,
+            lights: true,
+            vibration: true,
+          });
+        }
+      } catch (e) {
+        console.error('Notification setup failed', e);
+      }
+    };
+    setupNotifications();
+  }, []);
+
+  const sendNativeNotification = (title, body) => {
+    LocalNotifications.schedule({
+      notifications: [{
+        id: Date.now() % 2147483647,
+        title,
+        body,
+        channelId: NOTIFICATION_CHANNEL_ID,
+      }]
+    }).catch(e => console.error('Notification failed', e));
+  };
+
+  const showToast = (msg, duration = 4000) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), duration);
+  };
+
+  useEffect(() => {
+    let consecutiveErrors = 0;
     const fetchPhotos = async () => {
       try {
         const res = await fetch(API_URL);
-        if (res.ok) {
-          const data = await res.json();
-          
-          if (!isInitialLoad.current && data.length > prevPhotoCount.current) {
-            setNotification("Yeni bir fotoğraf eklendi! 📸");
-            setTimeout(() => setNotification(null), 4000);
-          }
-          
-          isInitialLoad.current = false;
-          prevPhotoCount.current = data.length;
-          setPhotos(data);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
         }
+        const data = await res.json();
+        consecutiveErrors = 0;
+
+        if (!isInitialLoad.current && data.length > prevPhotoCount.current) {
+          showToast("Yeni bir fotoğraf eklendi! 📸");
+          Haptics.notification({ type: NotificationType.Success }).catch(() => {});
+          sendNativeNotification('Yeni fotoğraf', 'Haritada yeni bir fotoğraf belirdi 📸');
+        }
+
+        isInitialLoad.current = false;
+        prevPhotoCount.current = data.length;
+        setPhotos(data);
       } catch (err) {
-        // Silently fail if server is unreachable
+        consecutiveErrors++;
+        if (consecutiveErrors === 1 || consecutiveErrors % 10 === 0) {
+          showToast(`⚠️ Sunucuya ulaşılamıyor: ${err.message}`, 6000);
+        }
       }
     };
-    
+
     fetchPhotos();
-    const intervalId = setInterval(fetchPhotos, 3000); // Poll every 3 seconds
+    const intervalId = setInterval(fetchPhotos, 3000);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -62,34 +114,54 @@ function App() {
     fetchDeviceInfo();
   }, []);
 
-  const handleCapture = (imageDataUrl) => {
+  const handleOpenCamera = async () => {
     if (!location) {
-      alert("Waiting for location... Please try again in a moment.");
+      alert("Konum bekleniyor... Lütfen birazdan tekrar deneyin.");
       return;
     }
 
-    const newPhoto = {
-      id: Date.now().toString(),
-      dataUrl: imageDataUrl,
-      lat: location.lat,
-      lng: location.lng,
-      timestamp: Date.now(),
-      batteryLevel: deviceInfo?.battery // Fotoğraf çekildiği andaki şarjı kaydediyoruz
-    };
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 80,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Camera,
+      });
 
-    // Update locally immediately for better UX
-    setPhotos((prev) => {
-      prevPhotoCount.current = prev.length + 1; // Prevent self-notification
-      return [...prev, newPhoto];
-    });
-    setIsCameraOpen(false);
+      Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
 
-    // Send to local server
-    fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newPhoto),
-    }).catch(err => console.error("Failed to sync photo to server", err));
+      const newPhoto = {
+        id: Date.now().toString(),
+        dataUrl: photo.dataUrl,
+        lat: location.lat,
+        lng: location.lng,
+        timestamp: Date.now(),
+        batteryLevel: deviceInfo?.battery
+      };
+
+      setPhotos((prev) => {
+        prevPhotoCount.current = prev.length + 1;
+        return [...prev, newPhoto];
+      });
+
+      sendNativeNotification(
+        'Fotoğraf eklendi 📸',
+        `Konum: ${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
+      );
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newPhoto),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      } catch (err) {
+        showToast(`⚠️ Foto sunucuya gönderilemedi: ${err.message}`, 6000);
+      }
+    } catch (e) {
+      // User cancelled the camera or permission denied — silent
+    }
   };
 
   return (
@@ -118,21 +190,14 @@ function App() {
           </div>
         )}
 
-        <button 
-          className="fab" 
-          onClick={() => setIsCameraOpen(true)}
+        <button
+          className="fab"
+          onClick={handleOpenCamera}
           aria-label="Open Camera"
         >
-          <Camera size={28} />
+          <CameraIcon size={28} />
         </button>
       </div>
-
-      {isCameraOpen && (
-        <CameraOverlay 
-          onClose={() => setIsCameraOpen(false)} 
-          onCapture={handleCapture} 
-        />
-      )}
     </>
   );
 }

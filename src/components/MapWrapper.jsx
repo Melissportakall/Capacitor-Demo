@@ -3,6 +3,31 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { MapPin, Image as ImageIcon } from 'lucide-react';
 import { renderToString } from 'react-dom/server';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+
+const handleShare = async (photo) => {
+  try {
+    const base64Data = photo.dataUrl.split(',')[1];
+    const filename = `photo_${photo.id}.jpg`;
+
+    const saved = await Filesystem.writeFile({
+      path: filename,
+      data: base64Data,
+      directory: Directory.Cache,
+    });
+
+    await Share.share({
+      title: 'Capacitor Demo Foto',
+      text: `📍 Konum: ${photo.lat.toFixed(4)}, ${photo.lng.toFixed(4)}\nhttps://maps.google.com/?q=${photo.lat},${photo.lng}`,
+      url: saved.uri,
+      files: [saved.uri],
+      dialogTitle: 'Foto + Konum paylaş',
+    });
+  } catch (e) {
+    console.error('Share failed', e);
+  }
+};
 
 // Custom pulsing blue dot for User Location
 const userIconHtml = `
@@ -67,7 +92,7 @@ export function MapWrapper({ location, photos }) {
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
         
         <ChangeView center={location ? [location.lat, location.lng] : null} />
@@ -98,6 +123,9 @@ export function MapWrapper({ location, photos }) {
                     <div className="popup-battery">🔋 Battery: %{photo.batteryLevel}</div>
                   )}
                   <div className="popup-coords">Lat: {photo.lat.toFixed(4)}, Lng: {photo.lng.toFixed(4)}</div>
+                  <button className="popup-share-btn" onClick={() => handleShare(photo)}>
+                    Paylaş
+                  </button>
                 </div>
               </div>
             </Popup>

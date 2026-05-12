@@ -2,13 +2,14 @@
 @import 'leaflet/dist/leaflet.css';
 
 :root {
-  --bg-color: #0f172a;
-  --text-color: #f8fafc;
+  --bg-color: #f1f5f9;
+  --text-color: #1e293b;
+  --text-muted: #64748b;
   --accent-color: #3b82f6;
   --accent-hover: #2563eb;
-  --glass-bg: rgba(15, 23, 42, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --shadow-color: rgba(0, 0, 0, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --shadow-color: rgba(15, 23, 42, 0.12);
 }
 
 * {
@@ -22,17 +23,15 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   -webkit-font-smoothing: antialiased;
-  overflow: hidden; /* Prevent scrolling, full screen app */
+  overflow: hidden;
 }
 
-/* Map container needs a specific height to render */
 .map-container {
   height: 100vh;
   width: 100vw;
-  z-index: 1; /* Map is base layer */
+  z-index: 1;
 }
 
-/* Glassmorphism utilities */
 .glass-panel {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
@@ -42,11 +41,10 @@ body {
   border-radius: 16px;
 }
 
-/* Overlays on top of the map */
 .ui-layer {
   position: absolute;
-  z-index: 1000; /* Leaflet uses z-index up to 400-ish */
-  pointer-events: none; /* Let clicks pass through to map where there are no UI elements */
+  z-index: 1000;
+  pointer-events: none;
   top: 0;
   left: 0;
   width: 100%;
@@ -57,12 +55,10 @@ body {
   padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)) 24px;
 }
 
-/* Make actual UI elements clickable */
 .ui-layer > * {
   pointer-events: auto;
 }
 
-/* Floating Action Button (FAB) */
 .fab {
   position: absolute;
   bottom: 32px;
@@ -77,7 +73,7 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.45);
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
   z-index: 1000;
 }
@@ -91,7 +87,6 @@ body {
   transform: scale(0.95);
 }
 
-/* Camera Overlay */
 .camera-overlay {
   position: fixed;
   top: 0;
@@ -113,7 +108,6 @@ body {
   to { opacity: 1; }
 }
 
-/* Toast Notification */
 .toast-notification {
   position: absolute;
   top: max(80px, env(safe-area-inset-top, 80px));
@@ -124,19 +118,19 @@ body {
   border-radius: 30px;
   font-weight: 600;
   color: white;
-  background: rgba(59, 130, 246, 0.85); /* Accent color */
+  background: rgba(59, 130, 246, 0.92);
   backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.35);
   animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   pointer-events: none;
 }
 
 @keyframes slideDown {
-  from { 
+  from {
     opacity: 0;
     transform: translate(-50%, -20px) scale(0.9);
   }
-  to { 
+  to {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
   }
@@ -191,8 +185,8 @@ video {
   position: absolute;
   top: 24px;
   right: 24px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
   width: 48px;
   height: 48px;
@@ -206,10 +200,10 @@ video {
 }
 
 .btn-close:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.7);
 }
 
-/* Custom Popup Styles for Leaflet */
+/* Leaflet Popup */
 .leaflet-popup-content-wrapper {
   background: var(--glass-bg) !important;
   backdrop-filter: blur(12px) !important;
@@ -245,22 +239,21 @@ video {
   border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 
 .popup-details {
   font-size: 0.85rem;
-  color: #cbd5e1;
+  color: var(--text-muted);
 }
 
 .popup-time {
-  font-weight: 500;
-  color: white;
+  font-weight: 600;
+  color: var(--text-color);
   margin-bottom: 4px;
 }
 
-/* Main Header */
 .main-header {
   display: flex;
   justify-content: space-between;
@@ -273,7 +266,7 @@ video {
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.025em;
-  background: linear-gradient(to right, #fff, #94a3b8);
+  background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -284,35 +277,51 @@ video {
   gap: 8px;
   font-size: 0.8rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .status-indicator {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #ef4444; /* red for error/searching */
+  background-color: #ef4444;
 }
 
 .status-indicator.active {
-  background-color: #22c55e; /* green for active */
+  background-color: #22c55e;
   box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
 }
 
 .popup-battery {
-  color: #fbbf24;
+  color: #d97706;
   font-weight: 600;
   margin: 2px 0;
 }
 
 .popup-coords {
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 0.75rem;
+}
+
+.popup-share-btn {
+  margin-top: 8px;
+  padding: 6px 14px;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.popup-share-btn:hover {
+  background: var(--accent-hover);
 }
 
 /* --- Custom Map Markers --- */
 
-/* User Location Pulsing Dot */
 .user-location-marker {
   position: relative;
   width: 24px;
@@ -325,12 +334,12 @@ video {
 .user-location-marker .dot {
   width: 14px;
   height: 14px;
-  background-color: #3b82f6; /* Blue */
+  background-color: var(--accent-color);
   border: 2px solid white;
   border-radius: 50%;
   position: absolute;
   z-index: 2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.4);
 }
 
 .user-location-marker .pulse {
@@ -358,13 +367,13 @@ video {
 .photo-marker-pin {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #ef4444, #b91c1c); /* Red gradient */
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid white;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.3);
   z-index: 2;
   overflow: hidden;
 }
@@ -372,8 +381,10 @@ video {
 .photo-marker-pin.has-image {
   width: 48px;
   height: 48px;
-  background: white; /* acts as a border */
+  background: white;
   padding: 3px;
+  border: 2px solid var(--accent-color);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
 }
 
 .marker-thumbnail {
@@ -389,10 +400,10 @@ video {
   height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 8px solid white;
+  border-top: 8px solid var(--accent-color);
   margin-top: -2px;
   z-index: 1;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 2px rgba(15, 23, 42, 0.25));
 }
 
 /* Device Info Panel */
@@ -405,7 +416,7 @@ video {
   align-items: center;
   gap: 8px;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-color);
   pointer-events: none;
   z-index: 1001;
 }

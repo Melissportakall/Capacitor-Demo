@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PhotoMap</string>
+    <string name="title_activity_main">PhotoMap</string>
+    <string name="package_name">com.deneme.photomap</string>
+    <string name="custom_url_scheme">com.deneme.photomap</string>
+</resources>
