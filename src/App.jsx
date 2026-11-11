@@ -19,7 +19,9 @@ function App() {
   const isInitialLoad = React.useRef(true);
   const prevPhotoCount = React.useRef(0);
 
-  const API_URL = "http://192.168.1.5:3000/api/photos";
+  
+  // GÜVENLİK NOTU: Kendi yerel IP adresinizi veya sunucu URL'nizi buraya yazınız.
+  const API_URL = "http://localhost:3000/api/photos";
 
   useEffect(() => {
     const setupNotifications = async () => {
@@ -76,7 +78,7 @@ function App() {
 
         if (!isInitialLoad.current && data.length > prevPhotoCount.current) {
           showToast("Yeni bir fotoğraf eklendi! 📸");
-          Haptics.notification({ type: NotificationType.Success }).catch(() => {});
+          Haptics.notification({ type: NotificationType.Success }).catch(() => { });
           sendNativeNotification('Yeni fotoğraf', 'Haritada yeni bir fotoğraf belirdi 📸');
         }
 
@@ -128,7 +130,7 @@ function App() {
         source: CameraSource.Camera,
       });
 
-      Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+      Haptics.impact({ style: ImpactStyle.Medium }).catch(() => { });
 
       const newPhoto = {
         id: Date.now().toString(),

@@ -1,104 +1,64 @@
-# Map & Camera Geo-Tagging App
+# PhotoMap: A Capacitor Learning Journey 🚀
 
-Bu proje, kullanıcının anlık konumunu harita üzerinde takip edebildiği ve cihaz kamerasıyla çektiği fotoğrafları haritada tam çekildiği noktada (küçük resim / thumbnail olarak) işaretleyebildiği interaktif bir uygulamadır. 
+PhotoMap is a real-time, location-based photo sharing application built to explore and master **Capacitor** technology. This project demonstrates how web technologies (React) can seamlessly interface with native mobile hardware.
 
-Modern **React + Vite** altyapısıyla geliştirilmiş olup, **Capacitor** sayesinde tek bir kod tabanından hem Web, hem Android, hem de iOS platformlarında yerel (native) uygulama olarak çalışabilmektedir.
+## 🎯 Project Purpose
+The primary goal of this project was to learn **Capacitor** and understand its role in modern cross-platform development. It serves as a practical implementation of bridging the gap between the browser and native mobile APIs.
 
-## 🚀 Özellikler
+## 🤔 What is Capacitor?
+[Capacitor](https://capacitorjs.com/) is a cross-platform native runtime that allows you to turn any web project into a native iOS or Android application. 
 
-- **Anlık Konum Takibi (Geolocation):** Kullanıcının konumunu yüksek doğrulukla bulur ve mavi, dalgalanan (pulse) bir gösterge ile haritada canlı olarak gösterir.
-- **Kamera Entegrasyonu:** Cihazın kamerasını doğrudan uygulama içinde (overlay olarak) açar.
-- **Harita Üzerinde Fotoğraf İşaretleme:** Çekilen fotoğraflar standart bir iğne (pin) yerine, doğrudan fotoğrafın kendisinin olduğu yuvarlak küçük resimler (thumbnail) olarak haritaya yerleşir.
-- **Detaylı Popup'lar:** Haritadaki fotoğraflara tıklandığında çekim zamanı, enlem ve boylam gibi detaylar şık bir Flexbox arayüzünde gösterilir.
-- **Premium Tasarım:** Koyu tema, Glassmorphism (buzlu cam efekti) ve akıcı animasyonlar barındırır.
+**Key takeaways from this project about Capacitor:**
+*   **Native Bridge:** It provides a consistent JavaScript API to access native device features like the Camera, GPS, and Haptics.
+*   **Web to Native:** It doesn't use "magic" to convert code; it runs your web app in a highly optimized WebView and provides the "bridge" to the native layer.
+*   **Native Tooling:** Unlike older technologies, Capacitor allows you to keep the native iOS and Android projects as source artifacts, giving you full control over the native IDEs (Xcode & Android Studio).
 
-## 🛠️ Kullanılan Teknolojiler (Dependencies)
+## ✨ Features Implemented
+This project utilizes several official Capacitor plugins to showcase native capabilities:
 
-- **Web (Core):** React 18, Vite 5
-- **Harita:** Leaflet, React-Leaflet
-- **İkonlar:** Lucide-React
-- **Native Paketleyici:** Capacitor (`@capacitor/core`, `@capacitor/cli`, `@capacitor/android`, `@capacitor/ios`)
+-   📸 **@capacitor/camera**: Captures high-quality photos using the device's native camera.
+-   📍 **@capacitor/geolocation**: Real-time tracking of user position on a Leaflet map.
+-   🔋 **@capacitor/device**: Accessing hardware metadata like battery level and device model.
+-   🔔 **@capacitor/local-notifications**: Scheduling and displaying native system notifications.
+-   📤 **@capacitor/share**: Utilizing the native share sheet to send photos and locations to other apps.
+-   📳 **@capacitor/haptics**: Providing physical vibration feedback for user actions.
+-   📂 **@capacitor/filesystem**: Temporary storage of images for sharing purposes.
 
----
+## 🛠 Tech Stack
+*   **Frontend:** React (Vite), Leaflet (Maps), Lucide React (Icons).
+*   **Mobile:** Capacitor.
+*   **Backend:** Node.js (Express) - A simple local server to store coordinates and image strings.
 
-## 💻 Web Ortamında Çalıştırma
+## 🚀 Getting Started
 
-Projeyi standart bir web uygulaması olarak tarayıcıda test etmek için:
+### Prerequisites
+*   Node.js (LTS)
+*   Android Studio (for Android) / Xcode (for iOS)
 
-1. Bağımlılıkları yükleyin:
-   ```bash
-   npm install
-   ```
+### Installation
+1.  Clone the repository:
+    ```bash
+    git clone <your-repo-url>
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Build the web project:
+    ```bash
+    npm run build
+    ```
+4.  Sync with native platforms:
+    ```bash
+    npx cap sync
+    ```
 
-2. Geliştirme sunucusunu başlatın:
-   ```bash
-   npm run dev
-   ```
-
-3. Tarayıcınızda `http://localhost:5173/` adresine gidin. (Uygulama sizden Konum ve Kamera erişim izinleri isteyecektir, test için izin verin).
-
----
-
-## 📱 Yerel (Native) Mobil Uygulama Olarak Çalıştırma
-
-Bu projede **Capacitor** halihazırda kuruludur. Projenizin en güncel halini mobile aktarmadan önce *her zaman* web projenizi derlemeniz (build) gerekir:
-
+### Running the Server
+The project includes a simple Express server to sync photos between devices:
 ```bash
-npm run build
+node server.cjs
 ```
+*Note: Update the `API_URL` in `App.jsx` to match your local IP address.*
 
-*(Her kod değişikliğinden sonra mobile yansıtmak için önce `npm run build`, ardından `npx cap sync` komutlarını çalıştırmayı unutmayın.)*
-
-### 🤖 Android İçin Kurulum ve Test
-
-*Gereksinimler: Bilgisayarınızda [Android Studio](https://developer.android.com/studio) kurulu olmalıdır.*
-
-1. Eğer Android platformu projeye ekli değilse ekleyin (Halihazırda ekliyse bu adımı atlayabilirsiniz):
-   ```bash
-   npx cap add android
-   ```
-
-2. Web tarafındaki build dosyalarınızı ve eklentileri Android projesine senkronize edin:
-   ```bash
-   npx cap sync android
-   ```
-
-3. Android Studio'da projeyi açın:
-   ```bash
-   npx cap open android
-   ```
-
-4. **İzinler (Önemli):** Android projesinin düzgün çalışması için `android/app/src/main/AndroidManifest.xml` dosyasında Kamera ve Konum izinlerinin eklendiğinden emin olun (Bu projede halihazırda eklenmiştir).
-
-5. Android Studio açıldıktan sonra sağ alt kısımdaki Gradle senkronizasyonunun bitmesini bekleyin. Ardından üst menüden bir Emülatör (Sanal Cihaz) veya USB ile bağlı telefonunuzu seçip **yeşil Run (Oynat) butonuna** tıklayarak uygulamayı test edin.
-
-### 🍏 iOS İçin Kurulum ve Test (Sadece Mac Cihazlar İçin)
-
-*Gereksinimler: Bir macOS işletim sistemi ve App Store'dan [Xcode](https://developer.apple.com/xcode/) yüklü olmalıdır.*
-
-1. iOS platformunu projeye dahil edin:
-   ```bash
-   npm install @capacitor/ios
-   npx cap add ios
-   ```
-
-2. Dosyaları iOS projesine senkronize edin:
-   ```bash
-   npx cap sync ios
-   ```
-
-3. **İzinler (Önemli):** Apple'ın sıkı güvenlik kuralları gereği, Kamera ve Konum izinlerinin neden istendiğini açıkça belirtmeliyiz. Projeyi açmadan önce veya Xcode üzerinden `ios/App/App/Info.plist` dosyasına şu satırları eklemeniz gerekir:
-   ```xml
-   <key>NSCameraUsageDescription</key>
-   <string>Haritada işaretlemek için fotoğraf çekebilmeniz adına kameranıza erişmemiz gerekiyor.</string>
-   
-   <key>NSLocationWhenInUseUsageDescription</key>
-   <string>Bulunduğunuz konumu haritada gösterebilmek ve fotoğraflarınızı işaretleyebilmek için konum erişimine ihtiyacımız var.</string>
-   ```
-
-4. Xcode'da projeyi açın:
-   ```bash
-   npx cap open ios
-   ```
-
-5. Xcode açıldıktan sonra sol üst köşeden hedef cihaz olarak **iPhone 15, iPhone 16** gibi bir iOS Emülatörü seçin ve **Run (Command + R)** tuşuna basarak uygulamanızı iOS üzerinde test edin. (Eğer gerçek bir iPhone'da test edecekseniz Xcode üzerinden Apple Geliştirici Hesabınızı bağlamanız gerekebilir).
+## 📝 License
+This project was created for educational purposes.
